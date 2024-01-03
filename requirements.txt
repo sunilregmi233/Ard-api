@@ -6,3 +6,6 @@ packaging==23.2
 pytz==2023.3.post1
 sqlparse==0.4.4
 typing_extensions==4.9.0
+django-crispy-forms==1.14.0
+crispy-bootstrap5==0.6
+django-allauth==0.50.0

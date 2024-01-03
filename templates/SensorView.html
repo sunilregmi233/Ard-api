@@ -1,0 +1,30 @@
+<!-- SensorView.html -->
+{% extends "_base.html" %}
+{% block title %}Sensor Data {% endblock title %}
+{% block content %}
+
+  <h2>Sensor Data from esp32 module</h2>
+  <hr>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Temperature (°C)</th>
+        <th>Humidity (%)</th>
+        <!-- Add more columns based on your model fields -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in data %}
+        <tr>
+            <td>{{ entry.timestamp|date:"F d, Y H:i:s" }}</td>
+            <td>{{ entry.temperature|floatformat:2 }}°C</td>
+            <td>{{ entry.humidity|floatformat:2 }}%</td>
+          <!-- Add more columns based on your model fields -->
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock content %}
