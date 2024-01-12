@@ -1,4 +1,4 @@
-<!-- SensorView.html -->
+<!-- sensor_data_listing.html -->
 {% extends "_base.html" %}
 {% block title %}Sensor Data {% endblock title %}
 {% block content %}
@@ -16,15 +16,18 @@
       </tr>
     </thead>
     <tbody>
-      {% for entry in data %}
+      {% for entry in sensor_data_page %}
         <tr>
-            <td>{{ entry.timestamp|date:"F d, Y H:i:s" }}</td>
-            <td>{{ entry.temperature|floatformat:2 }}°C</td>
-            <td>{{ entry.humidity|floatformat:2 }}%</td>
+          <td>{{ entry.timestamp|date:"F d, Y H:i:s" }}</td>
+          <td>{{ entry.temperature|floatformat:2 }}°C</td>
+          <td>{{ entry.humidity|floatformat:2 }}%</td>
           <!-- Add more columns based on your model fields -->
         </tr>
       {% endfor %}
     </tbody>
   </table>
+
+
+
 
 {% endblock content %}
