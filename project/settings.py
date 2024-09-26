@@ -37,13 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'pages',
+    # 'employeMgmt'
     'api',
+    'pages',
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth", # new
     "allauth.account",
-    'rest_framework'
+    'rest_framework',
+    'drf_yasg',
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
