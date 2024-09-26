@@ -1,6 +1,7 @@
 # models.py
 
 from django.db import models
+from django.utils import timezone
 
 class Sensor(models.Model):
     name = models.CharField(max_length=100)
@@ -17,4 +18,5 @@ class SensorData(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Data from {self.sensor.name} at {self.timestamp}"
+        local_time = timezone.localtime(self.timestamp)
+        return f"Data from {self.sensor.name} at {local_time}"
