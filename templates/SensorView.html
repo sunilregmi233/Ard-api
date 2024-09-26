@@ -103,13 +103,18 @@
                 $('#table-body').empty();
                 if (data.length > 0) {
                     data.forEach(function(item) {
+                        // Convert UTC timestamp to Nepal time
+                        const timestampNepal = new Date(item.timestamp).toLocaleString('en-US', {
+                            timeZone: 'Asia/Kathmandu',
+                            hour12: false, // Set to true if you prefer 12-hour format
+                        });
                         $('#table-body').append(`
                             <tr>
                                 <td>${item.sensor_name}</td>
                                 <td>${item.sensor_id}</td>
                                 <td>${item.temperature}</td>
                                 <td>${item.humidity}</td>
-                                <td>${item.timestamp}</td>
+                                <td>${timestampNepal}</td>
                             </tr>
                         `);
                     });
