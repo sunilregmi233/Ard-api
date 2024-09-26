@@ -1,10 +1,6 @@
-<!-- sensor_data_listing.html -->
 {% extends "_base.html" %}
 {% block title %}Sensor Data {% endblock title %}
 {% block content %}
-
-
-<!-- templates/sensor_data.html -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -40,75 +36,113 @@
             color: #000;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Sensor Data</h1>
 
     <!-- Sensor selection form -->
-    <form method="get" action="{% url 'sensor-data-list' %}">
-      <label for="sensor">Select Sensor:</label>
-      <select name="sensor" id="sensor" onchange="this.form.submit()">
-          <option value="">All Sensors</option>
-          {% for sensor in sensors %}
-              <option value="{{ sensor.id }}" {% if sensor.id == request.GET.sensor %}selected{% endif %}>
-                  {{ sensor.name }}
-              </option>
-          {% endfor %}
-      </select>
-  </form>
+    <form id="sensor-form">
+        <label for="sensor">Select Sensor:</label>
+        <select name="sensor" id="sensor">
+            <option value="">All Sensors</option>
+            {% for sensor in sensors %}
+                <option value="{{ sensor.id }}">{{ sensor.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
 
     <!-- Data Table -->
-    <table>
-        <thead>
-            <tr>
-                <th>Sensor Name</th>
-                <th>Sensor ID</th>
-                <th>Temperature (°C)</th>
-                <th>Humidity (%)</th>
-                <th>Timestamp</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for data in page_obj %}
+    <div id="data-table">
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ data.sensor.name }}</td>
-                    <td>{{ data.sensor.sensor_id }}</td>
-                    <td>{{ data.temperature }}</td>
-                    <td>{{ data.humidity }}</td>
-                    <td>{{ data.timestamp }}</td>
+                    <th>Sensor Name</th>
+                    <th>Sensor ID</th>
+                    <th>Temperature (°C)</th>
+                    <th>Humidity (%)</th>
+                    <th>Timestamp</th>
                 </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5">No data available for the selected sensor.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody id="table-body">
+                <!-- Data will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
 
     <!-- Pagination Controls -->
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a href="?sensor={{ selected_sensor_id }}&page=1">First</a>
-            <a href="?sensor={{ selected_sensor_id }}&page={{ page_obj.previous_page_number }}">Previous</a>
-        {% else %}
-            <span>First</span>
-            <span>Previous</span>
-        {% endif %}
-
-        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-
-        {% if page_obj.has_next %}
-            <a href="?sensor={{ selected_sensor_id }}&page={{ page_obj.next_page_number }}">Next</a>
-            <a href="?sensor={{ selected_sensor_id }}&page={{ page_obj.paginator.num_pages }}">Last</a>
-        {% else %}
-            <span>Next</span>
-            <span>Last</span>
-        {% endif %}
+    <div class="pagination" id="pagination">
+        <!-- Pagination links will be dynamically inserted here -->
     </div>
+
+    <script>
+        $(document).ready(function() {
+            loadData();
+
+            $('#sensor').change(function() {
+                loadData();
+            });
+
+            function loadData(page = 1) {
+                var sensorId = $('#sensor').val();
+                $.ajax({
+                    url: '{% url "sensor-data-list" %}',
+                    method: 'GET',
+                    data: {
+                        sensor: sensorId,
+                        page: page
+                    },
+                    success: function(response) {
+                        updateTable(response.data);
+                        updatePagination(response.pagination);
+                    }
+                });
+            }
+
+            function updateTable(data) {
+                $('#table-body').empty();
+                if (data.length > 0) {
+                    data.forEach(function(item) {
+                        $('#table-body').append(`
+                            <tr>
+                                <td>${item.sensor_name}</td>
+                                <td>${item.sensor_id}</td>
+                                <td>${item.temperature}</td>
+                                <td>${item.humidity}</td>
+                                <td>${item.timestamp}</td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    $('#table-body').append(`
+                        <tr>
+                            <td colspan="5">No data available for the selected sensor.</td>
+                        </tr>
+                    `);
+                }
+            }
+
+            function updatePagination(pagination) {
+                $('#pagination').empty();
+                if (pagination.has_previous) {
+                    $('#pagination').append(`<a href="#" data-page="1">First</a>`);
+                    $('#pagination').append(`<a href="#" data-page="${pagination.previous_page_number}">Previous</a>`);
+                }
+                $('#pagination').append(`<span class="current">Page ${pagination.number} of ${pagination.num_pages}</span>`);
+                if (pagination.has_next) {
+                    $('#pagination').append(`<a href="#" data-page="${pagination.next_page_number}">Next</a>`);
+                    $('#pagination').append(`<a href="#" data-page="${pagination.num_pages}">Last</a>`);
+                }
+                $('#pagination a').click(function(e) {
+                    e.preventDefault();
+                    var page = $(this).data('page');
+                    loadData(page);
+                });
+            }
+        });
+    </script>
 
 </body>
 </html>
-
-
 
 {% endblock content %}

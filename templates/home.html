@@ -1,17 +1,45 @@
 {% extends "_base.html" %}
 {% block title %}Home{% endblock title %}
 {% block content %}
-<h1>This is our home page.</h1>
-{% if user.is_authenticated %}
-<p>Hi {{ user.email }}!</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Welcome to the Sensor Data Collection App</h1>
+        <p class="text-center">Collecting data from various sensors in Janakpur, funded by D4D Nepal and The Asia Foundation.</p>
 
-<p><a href="{% url 'account_logout' %}">Log Out</a></p>
-<hr>
-<p><a href="{% url 'sensor-data-list' %}">view Sensor data</a></p>
+        <hr>
 
+        <div class="text-center">
+            {% if user.is_authenticated %}
+                <!-- <h3>Hello, {{ user.email }}!</h3> -->
+                <p>
+                    <a href="{% url 'account_logout' %}" class="btn btn-danger">Log Out</a>
+                </p>
+                <hr>
+                <p>
+                    <a href="{% url 'sensor-data-list' %}" class="btn btn-primary">View Sensor Data</a>
+                </p>
+            {% else %}
+                <h3>You are not logged in</h3>
+                <p>
+                    <a href="{% url 'account_login' %}" class="btn btn-success">Log In</a>
+                </p>
+            {% endif %}
+        </div>
+    </div>
 
-{% else %}
-<p>You are not logged in</p>
-<a href="{% url 'account_login' %}">Log In</a>
-{% endif %}
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
 {% endblock content %}
