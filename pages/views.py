@@ -50,20 +50,29 @@ class HomePageView(TemplateView):
 #         context = super().get_context_data(**kwargs)
 #         context['sensors'] = Sensor.objects.all()  # Fetch all sensors
 #         return context
+
 def sensor_data_list(request):
+    # Get sensor ID from request
     sensor_id = request.GET.get('sensor')
+    
+    # Get all sensors for the dropdown
     sensors = Sensor.objects.all()
+
+    # Filter sensor data if a sensor is selected, otherwise get all data
     sensor_data_queryset = SensorData.objects.all()
 
     if sensor_id:
         sensor_data_queryset = sensor_data_queryset.filter(sensor_id=sensor_id)
 
-    # Pagination
-    paginator = Paginator(sensor_data_queryset, 10)  # Show 10 records per page
+    # Order the data by timestamp in descending order
+    sensor_data_queryset = sensor_data_queryset.order_by('-timestamp')
+
+    # Paginate the queryset (50 records per page)
+    paginator = Paginator(sensor_data_queryset, 50)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Check if the request is AJAX
+    # Check if the request is AJAX (for pagination via JavaScript)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         data = [
             {
@@ -85,9 +94,10 @@ def sensor_data_list(request):
         }
         return JsonResponse({'data': data, 'pagination': pagination_info})
 
+    # If not an AJAX request, render the full page with the sensor data
     context = {
-        'sensors': sensors,
-        'page_obj': page_obj,
+        'sensors': sensors,  # For the sensor selection dropdown
+        'page_obj': page_obj,  # Paginated sensor data for the table
     }
     return render(request, 'SensorView.html', context)
 
