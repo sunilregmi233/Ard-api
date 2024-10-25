@@ -47,7 +47,7 @@
         <select name="sensor" id="sensor">
             <option value="">All Sensors</option>
             {% for sensor in sensors %}
-                <option value="{{ sensor.id }}">{{ sensor.name }}</option>
+                <option value="{{ sensor.id }}">{{ sensor.sensor_id }}</option>
             {% endfor %}
         </select>
     </form>
