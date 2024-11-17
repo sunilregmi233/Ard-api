@@ -9,7 +9,7 @@ class SensorSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'sensor_id']
 
 class SensorDataSerializer(serializers.ModelSerializer):
-    sensor_id = serializers.CharField(write_only=True)  # Declare sensor_id here for incoming data
+    sensor_id = serializers.CharField()  # Declare sensor_id here for incoming data
 
     class Meta:
         model = SensorData
