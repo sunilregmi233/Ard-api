@@ -1,10 +1,75 @@
-{% extends "_base.html" %}
+
+<!-- {% extends "_base.html" %} -->
 {% block title %}Log In{% endblock title %}
+{%load crispy_forms_tags %} 
 {% block content %}
-<h2>Log In</h2>
-<form method="post">
-{% csrf_token %}
-{{ form.as_p }}
-<button type="submit">Log In</button>
-</form>
+<div class="container py-5">
+    <div class="row align-items-center">
+        <!-- Welcome Section -->
+        <div class="col-md-6 text-center">
+            <h1 class="dashboard-heading">Welcome to <br> Web Dashboard</h1>
+            <p class="dashboard-subtext">Download and View all the data from the Sensor all over Nepal</p>
+        </div>
+
+        <!-- Login Section -->
+        <div class="col-md-6">
+            <div class="login-card">
+                <form method="post" class="p-3">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary w-100">Log in</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #d9e5f1; /* Light blue background */
+    }
+    .dashboard-heading {
+        font-weight: 700;
+        font-size: 2.5rem;
+        color: #0d253f;
+    }
+    .dashboard-subtext {
+        font-size: 1rem;
+        color: #5a6a7c;
+    }
+    .login-card {
+        background-color: #1f2d3d; /* Dark background */
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        color: #ffffff;
+    }
+    .login-card .form-control {
+        background-color: #f7f8fc; /* Light input background */
+        border: none;
+        border-radius: 5px;
+        height: 45px;
+    }
+   
+    .login-btn {
+        background-color: #000000; /* Black button */
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        height: 45px;
+    }
+    .login-btn:hover {
+        background-color: #333333; /* Slightly lighter black */
+    }
+    .forgot-password {
+        color: #bcccdc;
+        text-decoration: none;
+    }
+    .forgot-password:hover {
+        text-decoration: underline;
+    }
+</style>
 {% endblock content %}

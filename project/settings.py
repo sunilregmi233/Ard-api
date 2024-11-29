@@ -179,3 +179,5 @@ TIME_ZONE = 'Asia/Kathmandu'
 USE_TZ = True
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+CRISPY_TEMPLATE_PACK = 'bootstrap5'

@@ -1,16 +1,20 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView
 from api.models import SensorData, Sensor
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-
+from .forms import DataDownloadForm
+from django.http import HttpResponse
+import csv
+from django.contrib import messages
+from django.utils.text import slugify
+import logging, datetime
 # # Record Sensor Data (Simplified)
 @csrf_exempt
 def record_sensor_data(request):
@@ -32,9 +36,69 @@ def record_sensor_data(request):
             return JsonResponse({'error': 'Invalid data provided'}, status=400)
 
 class HomePageView(TemplateView):
-    template_name = "home.html"
+    template_name = "SensorView.html"
 
+class MapView(TemplateView):
+    template_name = "Map.html"
+    
+# class DataDownloadView(TemplateView):
+#     template_name = "DataDownload.html"
 
+# Set up logging for debugging
+logger = logging.getLogger(__name__)
+
+def download_data_view(request):
+    if request.method == "POST":
+        form = DataDownloadForm(request.POST)
+        if form.is_valid():
+            sensor = form.cleaned_data["sensor"]
+            start_date = form.cleaned_data["start_date"]
+            end_date = form.cleaned_data["end_date"]
+
+            # Ensure start_date and end_date are datetime.date objects
+            if isinstance(start_date, str):
+                start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+
+            if isinstance(end_date, str):
+                end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+            # Log form data for debugging
+            logger.debug(f"Sensor: {sensor}, Start Date: {start_date}, End Date: {end_date}")
+
+            # Query SensorData related to the selected Sensor
+            data = SensorData.objects.filter(
+                sensor=sensor,
+                timestamp__date__range=(start_date, end_date)
+            )
+
+            # Log the query for debugging
+            logger.debug(f"Generated query: {data.query}")
+
+            if not data.exists():
+                logger.warning("No data found for the selected range.")
+                messages.error(request, "No data found for the selected range.")
+                return redirect("home")
+
+            # Generate CSV response
+            response = HttpResponse(content_type="text/csv")
+            filename = f"{slugify(sensor.name)}_data_{start_date}_to_{end_date}.csv"
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+            writer = csv.writer(response)
+            writer.writerow(["Sensor Name", "Sensor ID", "Temperature (°C)", "Humidity (%)", "Timestamp"])
+
+            for row in data:
+                logger.debug(f"Writing row: {row.sensor.name}, {row.sensor.sensor_id}, {row.temperature}, {row.humidity}, {row.timestamp}")
+                writer.writerow([row.sensor.name, row.sensor.sensor_id, row.temperature, row.humidity, row.timestamp])
+
+            return response
+        else:
+            logger.error("Form validation failed.")
+            messages.error(request, "Invalid form submission.")
+    else:
+        form = DataDownloadForm()
+
+    return render(request, "DataDownload.html", {"form": form})
 
 # class SensorDataListView(LoginRequiredMixin, ListView):
 #     model = SensorData
