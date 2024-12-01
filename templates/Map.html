@@ -72,7 +72,7 @@
         <!-- Dropdown for selecting region -->
         <div class="dropdown">
             <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Kathmandu
+                Janakpur
             </button>
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="#">Kathmandu</a></li>
@@ -83,20 +83,24 @@
 
         <!-- Map Placeholder -->
         <div id="map"></div>
-
-        <!-- Download Map Button -->
-        <button class="download-btn">
-            <i class="bi bi-download"></i> Download Map
-        </button>
     </div>
 </div>
 
 <!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
 <script>
-    // Initialize the map
-    var map = L.map('map').setView([27.7172, 85.3240], 13); // Centered on Kathmandu
+    // Adjust the map container to fit the screen
+    function resizeMapContainer() {
+        const windowHeight = window.innerHeight;
+        const headerHeight = document.querySelector('h2').offsetHeight;
+        const mapContainer = document.querySelector('#map');
+        mapContainer.style.height = (windowHeight - headerHeight - 50) + 'px';
+    }
+
+    // Initialize the map centered around Janakpur
+    var map = L.map('map').setView([26.7270, 85.8911], 13); // Centered on Janakpur
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -104,19 +108,51 @@
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Add sample markers
-    var markers = [
-        { lat: 27.7172, lng: 85.3240, label: 'S01' },
-        { lat: 27.7128, lng: 85.3152, label: 'S05' },
-        { lat: 27.7099, lng: 85.3131, label: 'S08' },
-        { lat: 27.7017, lng: 85.3205, label: 'S12' },
-        { lat: 27.6989, lng: 85.3333, label: 'S28' }
-    ];
+    // Function to fetch and display markers dynamically
+    function loadSensorData() {
+        $.ajax({
+            url: '/api/latest-sensors-data/',  // Replace with your backend endpoint
+            method: 'GET',
+            success: function(response) {
+                console.log(response)
+                // Clear existing markers
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
 
-    markers.forEach(function(marker) {
-        L.marker([marker.lat, marker.lng])
-            .bindPopup(`<b>${marker.label}</b>`)
-            .addTo(map);
+                // Add new markers from response data
+                response.forEach(function(sensor) {
+                    if (sensor.coordinates && sensor.coordinates.latitude && sensor.coordinates.longitude) {
+                        // Add marker with sensor data popup
+                        L.marker([sensor.coordinates.latitude, sensor.coordinates.longitude])
+                            .bindPopup(
+                                `<b>Sensor ID: ${sensor.sensor_id}</b><br>
+                                 Temperature: ${sensor.temperature}°C<br>
+                                 Humidity: ${sensor.humidity}%<br>
+                                 Timestamp: ${sensor.timestamp}`
+                            )
+                            .addTo(map);
+                    }
+                });
+            },
+            error: function(error) {
+                console.error("Error fetching sensor data:", error);
+            }
+        });
+    }
+
+    // Load data on page load
+    $(document).ready(function() {
+        resizeMapContainer();
+        loadSensorData();
+
+        // Refresh data every 60 seconds
+        setInterval(loadSensorData, 60000);
+
+        // Adjust map container size on window resize
+        window.addEventListener('resize', resizeMapContainer);
     });
 </script>
 </body>

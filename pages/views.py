@@ -15,6 +15,7 @@ import csv
 from django.contrib import messages
 from django.utils.text import slugify
 import logging, datetime
+from django.db.models import Max
 # # Record Sensor Data (Simplified)
 @csrf_exempt
 def record_sensor_data(request):
@@ -35,8 +36,8 @@ def record_sensor_data(request):
         except KeyError:
             return JsonResponse({'error': 'Invalid data provided'}, status=400)
 
-class HomePageView(TemplateView):
-    template_name = "SensorView.html"
+# class HomePageView(TemplateView):
+#     template_name = "SensorView.html"
 
 class MapView(TemplateView):
     template_name = "Map.html"
@@ -77,7 +78,7 @@ def download_data_view(request):
             if not data.exists():
                 logger.warning("No data found for the selected range.")
                 messages.error(request, "No data found for the selected range.")
-                return redirect("home")
+                return redirect("/")
 
             # Generate CSV response
             response = HttpResponse(content_type="text/csv")
@@ -182,3 +183,64 @@ def register_device(request):
             return JsonResponse({'error': 'Invalid data provided'}, status=400)
 
 
+def get_latest_sensor_data():
+    """
+    Fetches the latest data for a predefined set of sensors and adds coordinates.
+    Returns a list of dictionaries containing sensor data and coordinates.
+    """
+    # Static list of sensor IDs
+    sensor_ids = ["JK101", "JK102", "JK103", "JK104", "JK105", 
+                  "JK106", "JK107", "JK108", "JK109", "JK110"]
+
+    # Dictionary of sensor coordinates
+    sensor_coordinates_dict = {
+        "JK101": {"latitude": 27.6415, "longitude": 85.5255},  # Panchkhal
+        "JK102": {"latitude": 27.7172, "longitude": 85.3240},  # Kathmandu
+        "JK103": {"latitude": 28.2096, "longitude": 83.9856},  # Pokhara
+        "JK104": {"latitude": 27.5612, "longitude": 84.3585},  # Chitwan
+        "JK105": {"latitude": 27.6648, "longitude": 85.6127},  # Lalitpur
+        "JK106": {"latitude": 27.6773, "longitude": 85.4341},  # Bhaktapur
+        "JK107": {"latitude": 27.6985, "longitude": 86.0352},  # Ramechhap
+        "JK108": {"latitude": 27.9573, "longitude": 85.9164},  # Sindhupalchok
+        "JK109": {"latitude": 28.3457, "longitude": 83.5761},  # Baglung
+        "JK110": {"latitude": 27.6278, "longitude": 85.5326}   # Dhulikhel
+    }
+
+    # Fetch the latest timestamp for each sensor
+    latest_entries = (
+        SensorData.objects.filter(sensor__sensor_id__in=sensor_ids)
+        .values("sensor__sensor_id")
+        .annotate(latest_timestamp=Max("timestamp"))
+    )
+
+    if not latest_entries:
+        return []
+
+    # Collect the latest data for each sensor
+    latest_data_records = []
+    for entry in latest_entries:
+        latest_data = SensorData.objects.filter(
+            sensor__sensor_id=entry["sensor__sensor_id"],
+            timestamp=entry["latest_timestamp"]
+        ).first()
+
+        if latest_data:
+            # Add sensor_id, data, and coordinates
+            latest_data_dict = {
+                "sensor_id": entry["sensor__sensor_id"],
+                "temperature": latest_data.temperature,
+                "humidity": latest_data.humidity,
+                "timestamp": latest_data.timestamp,
+                "coordinates": sensor_coordinates_dict.get(entry["sensor__sensor_id"])
+            }
+            latest_data_records.append(latest_data_dict)
+
+    return latest_data_records
+
+
+def resource_map_view(request):
+    """
+    View for rendering the resource map page with the latest sensor data.
+    """
+    latest_data = get_latest_sensor_data()
+    return render(request, "Map.html", {"latest_data": latest_data})

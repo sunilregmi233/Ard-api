@@ -68,16 +68,16 @@ class LatestDataForSensorsView(APIView):
 
         # Dictionary of sensor coordinates (latitude and longitude)
         sensor_coordinates_dict = {
-            "JK101": {"latitude": 27.6415, "longitude": 85.5255},  # Example coordinates for Panchkhal, Kavre
-            "JK102": {"latitude": 27.7172, "longitude": 85.3240},  # Kathmandu
-            "JK103": {"latitude": 28.2096, "longitude": 83.9856},  # Pokhara, Kaski
-            "JK104": {"latitude": 27.5612, "longitude": 84.3585},  # Chitwan
-            "JK105": {"latitude": 27.6648, "longitude": 85.6127},  # Lalitpur
-            "JK106": {"latitude": 27.6773, "longitude": 85.4341},  # Bhaktapur
-            "JK107": {"latitude": 27.6985, "longitude": 86.0352},  # Ramechhap
-            "JK108": {"latitude": 27.9573, "longitude": 85.9164},  # Sindhupalchok
-            "JK109": {"latitude": 28.3457, "longitude": 83.5761},  # Baglung
-            "JK110": {"latitude": 27.6278, "longitude": 85.5326}   # Dhulikhel, Kavre
+            "JK101": {"latitude": 26.7345, "longitude": 85.9289},  # Example coordinates for Panchkhal, Kavre
+            "JK102": {"latitude": 26.7314, "longitude": 85.9313},  # Kathmandu
+            "JK103": {"latitude": 26.7314, "longitude": 85.9279},  # Pokhara, Kaski
+            "JK104": {"latitude": 26.7314, "longitude": 85.9249},  # Chitwan
+            "JK105": {"latitude": 26.7303, "longitude": 85.9316},  # Lalitpur
+            "JK106": {"latitude": 26.7338, "longitude": 85.9205},  # Bhaktapur
+            "JK107": {"latitude": 26.7168, "longitude": 85.9201},  # Ramechhap
+            "JK108": {"latitude": 26.7360, "longitude": 85.9348},  # Sindhupalchok
+            "JK109": {"latitude": 26.7602, "longitude": 83.9431},  # Baglung
+            "JK110": {"latitude": 26.7173, "longitude": 85.9225}   # Dhulikhel, Kavre
         }
 
         # Fetch the latest timestamp for each sensor based on sensor_id
