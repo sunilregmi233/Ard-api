@@ -16,7 +16,9 @@ from django.contrib import messages
 from django.utils.text import slugify
 import logging, datetime
 from django.db.models import Max
+from django.contrib.auth.decorators import login_required
 # # Record Sensor Data (Simplified)
+
 @csrf_exempt
 def record_sensor_data(request):
     if request.method == 'POST':
@@ -39,8 +41,9 @@ def record_sensor_data(request):
 # class HomePageView(TemplateView):
 #     template_name = "SensorView.html"
 
-class MapView(TemplateView):
+class MapView(LoginRequiredMixin, TemplateView):
     template_name = "Map.html"
+    login_url = '/accounts/login/'
     
 # class DataDownloadView(TemplateView):
 #     template_name = "DataDownload.html"
@@ -48,6 +51,7 @@ class MapView(TemplateView):
 # Set up logging for debugging
 logger = logging.getLogger(__name__)
 
+@login_required(login_url='/accounts/login/')
 def download_data_view(request):
     if request.method == "POST":
         form = DataDownloadForm(request.POST)
@@ -78,7 +82,7 @@ def download_data_view(request):
             if not data.exists():
                 logger.warning("No data found for the selected range.")
                 messages.error(request, "No data found for the selected range.")
-                return redirect("/")
+                return redirect("/data")
 
             # Generate CSV response
             response = HttpResponse(content_type="text/csv")
@@ -101,21 +105,7 @@ def download_data_view(request):
 
     return render(request, "DataDownload.html", {"form": form})
 
-# class SensorDataListView(LoginRequiredMixin, ListView):
-#     model = SensorData
-#     template_name = 'SensorView.html'
-#     context_object_name = 'sensor_data_page'
-#     login_url = '/accounts/login'  # Customize the login URL if needed
-#     paginate_by = 1000  # Set the number of entries per page
-
-#     def get_queryset(self):
-#         return SensorData.objects.order_by('-timestamp')
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['sensors'] = Sensor.objects.all()  # Fetch all sensors
-#         return context
-
+@login_required(login_url='/accounts/login/')
 def sensor_data_list(request):
     # Get sensor ID from request
     sensor_id = request.GET.get('sensor')
@@ -182,7 +172,7 @@ def register_device(request):
         except KeyError:
             return JsonResponse({'error': 'Invalid data provided'}, status=400)
 
-
+@login_required(login_url='/accounts/login/')
 def get_latest_sensor_data():
     """
     Fetches the latest data for a predefined set of sensors and adds coordinates.
@@ -194,16 +184,16 @@ def get_latest_sensor_data():
 
     # Dictionary of sensor coordinates
     sensor_coordinates_dict = {
-        "JK101": {"latitude": 27.6415, "longitude": 85.5255},  # Panchkhal
-        "JK102": {"latitude": 27.7172, "longitude": 85.3240},  # Kathmandu
-        "JK103": {"latitude": 28.2096, "longitude": 83.9856},  # Pokhara
-        "JK104": {"latitude": 27.5612, "longitude": 84.3585},  # Chitwan
-        "JK105": {"latitude": 27.6648, "longitude": 85.6127},  # Lalitpur
-        "JK106": {"latitude": 27.6773, "longitude": 85.4341},  # Bhaktapur
-        "JK107": {"latitude": 27.6985, "longitude": 86.0352},  # Ramechhap
-        "JK108": {"latitude": 27.9573, "longitude": 85.9164},  # Sindhupalchok
-        "JK109": {"latitude": 28.3457, "longitude": 83.5761},  # Baglung
-        "JK110": {"latitude": 27.6278, "longitude": 85.5326}   # Dhulikhel
+        "JK101": {"latitude": 27.6415, "longitude": 85.5255},  
+        "JK102": {"latitude": 27.7172, "longitude": 85.3240},  
+        "JK103": {"latitude": 28.2096, "longitude": 83.9856}, 
+        "JK104": {"latitude": 27.5612, "longitude": 84.3585}, 
+        "JK105": {"latitude": 27.6648, "longitude": 85.6127}, 
+        "JK106": {"latitude": 27.6773, "longitude": 85.4341}, 
+        "JK107": {"latitude": 27.6985, "longitude": 86.0352}, 
+        "JK108": {"latitude": 27.9573, "longitude": 85.9164}, 
+        "JK109": {"latitude": 26.7602, "longitude": 85.9431}, 
+        "JK110": {"latitude": 27.6278, "longitude": 85.5326}  
     }
 
     # Fetch the latest timestamp for each sensor
@@ -238,9 +228,11 @@ def get_latest_sensor_data():
     return latest_data_records
 
 
+@login_required(login_url='/accounts/login/')
 def resource_map_view(request):
     """
     View for rendering the resource map page with the latest sensor data.
     """
     latest_data = get_latest_sensor_data()
     return render(request, "Map.html", {"latest_data": latest_data})
+

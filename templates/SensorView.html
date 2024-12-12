@@ -1,13 +1,6 @@
 {% extends "_base.html" %}
 {% block title %}Sensor Data {% endblock title %}
 {% block content %}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sensor Data</title>
     <style>
         table {
             width: 100%;
@@ -37,9 +30,9 @@
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
-    <h1>Sensor Data</h1>
+
+    <div class="contain p-20" style="padding-top: 20px;">
+        <h1>Sensor Data</h1>
 
     <!-- Sensor selection form -->
     <form id="sensor-form">
@@ -73,6 +66,7 @@
     <!-- Pagination Controls -->
     <div class="pagination" id="pagination">
         <!-- Pagination links will be dynamically inserted here -->
+    </div>
     </div>
 
     <script>
@@ -147,7 +141,6 @@
         });
     </script>
 
-</body>
-</html>
+
 
 {% endblock content %}
