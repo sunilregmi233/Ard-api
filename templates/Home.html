@@ -44,6 +44,31 @@
         {% include 'SensorView.html' %}
     </div>
 </div>
+<div id="heat-index-legend" style="width: 30%; margin: 0 auto; padding-bottom: 10px;">
+    <h3 class="text-center">Heat Index Legend</h3>
+    <table style="margin: 0 auto; width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="background-color: red; width: 20px; height: 20px; border: 1px solid black;"></td>
+            <td style="text-align: left; padding-left: 10px;">Extreme Danger: Heat index > 54°C</td>
+        </tr>
+        <tr>
+            <td style="background-color: orange; width: 20px; height: 20px; border: 1px solid black;"></td>
+            <td style="text-align: left; padding-left: 10px;">Danger: Heat index 41°C - 54°C</td>
+        </tr>
+        <tr>
+            <td style="background-color: yellow; width: 20px; height: 20px; border: 1px solid black;"></td>
+            <td style="text-align: left; padding-left: 10px;">Extreme Caution: Heat index 32°C - 41°C</td>
+        </tr>
+        <tr>
+            <td style="background-color: #FFFF99; width: 20px; height: 20px; border: 1px solid black;"></td>
+            <td style="text-align: left; padding-left: 10px;">Caution: Heat index 27°C - 32°C</td>
+        </tr>
+        <tr>
+            <td style="background-color: white; width: 20px; height: 20px; border: 1px solid black;"></td>
+            <td style="text-align: left; padding-left: 10px;">Safe: Heat index < 27°C</td>
+        </tr>
+    </table>
+</div>
 {% include 'Faq.html' %}
 {% include 'Media.html' %}
 

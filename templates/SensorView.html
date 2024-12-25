@@ -40,8 +40,7 @@
 
 <div class="container" style="overflow: hidden;">
     <div class="contain " style="padding-top: 20px;">
-        <h1 class="text-center">Heat Index Table</h1>
-
+        
     <!-- Sensor selection form -->
     <!-- <form id="sensor-form">
         <label for="sensor">Select Sensor:</label>
@@ -56,6 +55,8 @@
     <!-- Data Table -->
     <div id="data-table">
         <table>
+        <h2 class="text-center">Heat Index Table</h2>
+
             <thead>
                 <tr>
                     <th>Sensor ID</th>
@@ -121,24 +122,41 @@
             function updateTable(data) {
                 $('#table-body').empty();
                 if (data.length > 0) {
-                    data.forEach(function(item) {
+                    data.forEach(function (item) {
+                        if (item.temperature < 0 || item.temperature > 60 || item.humidity < 0 || item.humidity > 99) {
+                            return; // Skip this row
+                        }
                         // Convert UTC timestamp to Nepal time
                         const timestampNepal = new Date(item.timestamp).toLocaleString('en-US', {
                             timeZone: 'Asia/Kathmandu',
-                            hour12: false, // Set to true if you prefer 12-hour format
+                            hour12: true, // 12-hour format
                         });
 
                         // Calculate heat index
                         const heatIndex = calculateHeatIndex(item.temperature, item.humidity);
 
+                        // Determine row color based on heat index
+                        let rowColor = '';
+                        if (heatIndex > 54) {
+                            rowColor = 'red'; // Extreme danger
+                        } else if (heatIndex >= 41) {
+                            rowColor = 'orange'; // Danger
+                        } else if (heatIndex >= 32) {
+                            rowColor = 'yellow'; // Extreme caution
+                        } else if (heatIndex >= 27) {
+                            rowColor = '#FFFF99'; // Caution (light yellow)
+                        } else {
+                            rowColor = 'white'; // Safe zone
+                        }
+
+                        // Append the row with appropriate color
                         $('#table-body').append(`
-                            <tr>
+                            <tr style="background-color: ${rowColor};">
                                 <td>${item.sensor_id}</td>
                                 <td>${timestampNepal}</td>
                                 <td>${item.temperature}</td>
                                 <td>${item.humidity}</td>
                                 <td>${heatIndex}</td>
-                                
                             </tr>
                         `);
                     });

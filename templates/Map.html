@@ -257,7 +257,21 @@
         maxZoom: 19,
         attribution: '© OpenStreetMap'
     }).addTo(map);
-
+    function calculateHeatIndex(temperature, humidity) {
+        // Heat Index formula approximation (in Celsius)
+        const T = temperature;
+        const R = humidity;
+        const HI = -8.78469475556 + 
+            1.61139411 * T + 
+            2.33854883889 * R + 
+            -0.14611605 * T * R + 
+            -0.012308094 * Math.pow(T, 2) + 
+            -0.0164248277778 * Math.pow(R, 2) + 
+            0.002211732 * Math.pow(T, 2) * R + 
+            0.00072546 * T * Math.pow(R, 2) + 
+            -0.000003582 * Math.pow(T, 2) * Math.pow(R, 2);
+        return HI.toFixed(2); // Round to 2 decimal places
+    }
     // Dynamically create Chart.js instance
     function createChart(canvasId, labels, data, label) {
         const ctx = document.getElementById(canvasId).getContext('2d');
@@ -313,8 +327,7 @@
                 response.forEach(function(sensor) {
                     if (sensor.coordinates && sensor.coordinates.latitude && sensor.coordinates.longitude) {
                         const statusColor = getStatusColor(sensor);
-                        console.log(statusColor)
-
+                        const hi = calculateHeatIndex(sensor.temperature, sensor.humidity)
                         const customIcon = L.divIcon({
                             className: 'custom-marker',
                             html: `
@@ -343,43 +356,61 @@
                             iconSize: [40, 40],
                             iconAnchor: [20, 20]
                         });
-
-                        L.marker([sensor.coordinates.latitude, sensor.coordinates.longitude], { icon: customIcon })
-                            .bindPopup(`
-                                <div class="popup">
-                                    <div class="popup-header">
-                                        <h2>${sensor.sensor_id}</h2>
-                                        <div class="heat-index">Heat Index: ${sensor.heat_index || 'N/A'}</div>
-                                    </div>
-                                    <table class="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Temperature</th>
-                                                <th>Humidity</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Average - Day: ${sensor.temperature_day || 'N/A'}°C</td>
-                                                <td>Average - Day: ${sensor.humidity_day || 'N/A'}%</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Average - Night: ${sensor.temperature_night || 'N/A'}°C</td>
-                                                <td>Average - Night: ${sensor.humidity_night || 'N/A'}%</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <div class="chart-container">
-                                        <canvas id="chart-${sensor.sensor_id}" width="400" height="200"></canvas>
-                                    </div>
+                        const marker = L.marker([sensor.coordinates.latitude, sensor.coordinates.longitude], { icon: customIcon });
+                        if (sensor.status === "Inactive" || sensor.status === "No Data") {
+                        // If status is "red", show a different popup
+                        marker.bindPopup(`
+                            <div class="popup">
+                                <h2>Sensor ${sensor.sensor_id}</h2>
+                                <p>Status: Inactive (No Data)</p>
+                                <p>This sensor is currently not providing data. Please check the sensor or connection.</p>
+                                <div class="popup-footer">
+                                    <button class="download">Download Report</button>
                                 </div>
-                            `)
-                            .on('popupopen', function() {
-                                const labels = ['6 Dec', '7 Dec', '8 Dec', '9 Dec', '10 Dec', '11 Dec', '12 Dec'];
-                                const data = [23, 24, 26, 27, 27, 28, 26]; // Replace with actual data
-                                createChart(`chart-${sensor.sensor_id}`, labels, data, 'Temperature');
-                            })
-                            .addTo(map);
+                            </div>
+                        `);
+                    } else {
+                        // Default popup content for active sensors
+                        marker.bindPopup(`
+                            <div class="popup">
+                                <div class="popup-header">
+                                    <h2>${sensor.sensor_id}</h2>
+                                    <div class="heat-index">Heat Index: ${hi || 'N/A'}</div>
+                                </div>
+                                <h6>Average Temperature and Humidity of last 24hr</h6>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Temperature</th>
+                                            <th>Humidity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Average - Day: ${sensor.temperature_day || 'N/A'}°C</td>
+                                            <td>Average - Day: ${sensor.humidity_day || 'N/A'}%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Average - Night: ${sensor.temperature_night || 'N/A'}°C</td>
+                                            <td>Average - Night: ${sensor.humidity_night || 'N/A'}%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h6>Data of last 7-day</h6>
+                                <div class="chart-container">
+                                    <canvas id="chart-${sensor.sensor_id}" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        `)
+                        .on('popupopen', function() {
+                            console.log(sensor.seven_day_averages);
+                            const labels = sensor.seven_day_averages.map(x => x.date);
+                            const data = sensor.seven_day_averages.map(x => x.average_temperature);
+                            createChart(`chart-${sensor.sensor_id}`, labels, data, 'Temperature');
+                        });
+                    }
+
+                    marker.addTo(map);
                     }
                 });
             },

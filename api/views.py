@@ -107,7 +107,7 @@ class LatestDataForSensorsView(APIView):
             "JK106": {"latitude": 26.7338, "longitude": 85.9205},
             "JK107": {"latitude": 26.7168, "longitude": 85.9201},
             "JK108": {"latitude": 26.7360, "longitude": 85.9348},
-            "JK109": {"latitude": 26.7602, "longitude": 83.9431},
+            "JK109": {"latitude": 26.7582, "longitude": 85.9403},
             "JK110": {"latitude": 26.7173, "longitude": 85.9225},
         }
 
@@ -129,6 +129,34 @@ class LatestDataForSensorsView(APIView):
         valid_humidity_range = (0, 100)
         status_threshold = timedelta(minutes=5)
         recent_threshold = timedelta(minutes=2)
+
+        # Calculate the start date for the last 7 days
+        start_date = current_time - timedelta(days=7)
+
+        # Query sensor data for the last 7 days
+        seven_day_data = (
+            SensorData.objects.filter(sensor__sensor_id__in=sensor_ids, timestamp__gte=start_date)
+            .values("sensor__sensor_id", "timestamp__date")
+            .annotate(
+                avg_temperature=Avg("temperature"),
+                avg_humidity=Avg("humidity")
+            )
+            .order_by("sensor__sensor_id", "timestamp__date")
+        )
+
+        # Organize 7-day data by sensor
+        seven_day_averages = {}
+        for entry in seven_day_data:
+            sensor_id = entry["sensor__sensor_id"]
+            date = entry["timestamp__date"]
+            if sensor_id not in seven_day_averages:
+                seven_day_averages[sensor_id] = []
+
+            seven_day_averages[sensor_id].append({
+                "date": date,
+                "average_temperature": round(entry["avg_temperature"], 2) if entry["avg_temperature"] else None,
+                "average_humidity": round(entry["avg_humidity"], 2) if entry["avg_humidity"] else None,
+            })
 
         # Fetch the full records for the latest entries and include coordinates
         latest_data_records = []
@@ -179,6 +207,7 @@ class LatestDataForSensorsView(APIView):
                 )
 
                 heat_index = calculate_heat_index(latest_data.temperature, latest_data.humidity)
+                print(heat_index)
 
                 latest_data_dict = {
                     "sensor_id": sensor_id,
@@ -192,6 +221,7 @@ class LatestDataForSensorsView(APIView):
                     "temperature_night": round(night_avg["avg_temperature"], 2) if night_avg["avg_temperature"] else None,
                     "humidity_night": round(night_avg["avg_humidity"], 2) if night_avg["avg_humidity"] else None,
                     "status": sensorstatus,
+                    "seven_day_averages": seven_day_averages.get(sensor_id, []),  # Add 7-day averages
                 }
             else:
                 latest_data_dict = {
@@ -206,8 +236,9 @@ class LatestDataForSensorsView(APIView):
                     "temperature_night": None,
                     "humidity_night": None,
                     "status": sensorstatus,
+                    "seven_day_averages": seven_day_averages.get(sensor_id, []),  # Add 7-day averages
                 }
-
             latest_data_records.append(latest_data_dict)
+            print(latest_data_dict)
 
         return Response(latest_data_records, status=status.HTTP_200_OK)
