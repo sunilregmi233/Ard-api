@@ -25,3 +25,4 @@ class SensorDataSerializer(serializers.ModelSerializer):
 
         # Create SensorData instance with the retrieved sensor
         return SensorData.objects.create(sensor=sensor, **validated_data)
+    

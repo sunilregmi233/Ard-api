@@ -1,0 +1,60 @@
+
+
+{% block content %}
+<style>
+    /* Overall layout */
+    .dashboard-container {
+        display: flex;
+        height: 100vh; /* Full viewport height */
+        overflow: hidden; /* Prevent scrolling on the container */
+    }
+
+    /* Sidebar styling */
+    .sidebar {
+        width: 250px;
+        background-color: #2a3b4c; /* Sidebar background color */
+        color: white;
+        padding: 20px;
+        top: 100px;
+        display: flex;
+        flex-direction: column;
+        position: fixed; /* Fixed position */
+        left: 150px;
+        height: 750px;
+        overflow: hidden; /* Prevent scrolling */
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    }
+
+    .sidebar a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.1rem;
+        margin: 15px 0;
+        transition: color 0.3s ease;
+    }
+
+    .sidebar a:hover {
+        color: #0bc77d; /* Hover effect */
+    }
+
+    /* Content area styling */
+    .content {
+        margin-left: 250px; /* Leave space for the sidebar */
+        overflow-y: auto; /* Enable scrolling for the content */
+        width: 100%;
+        background-color: #f8f9fa; /* Light background for content */
+        height: 100vh;
+    }
+</style>
+
+<div class="dashboard-container">
+  
+
+    <!-- Main content area -->
+    <div class="content">
+        {% block dashboard_content %}
+        
+        {% endblock dashboard_content %}
+    </div>
+</div>
+{% endblock content %}

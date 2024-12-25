@@ -13,5 +13,6 @@ urlpatterns = [
     path('sensor-data/', SensorDataListCreateView.as_view(), name='sensor-data-list-create'),  # List and create sensor data
     path('sensor-data/<int:pk>/', SensorDataDetailView.as_view(), name='sensor-data-detail'),  # Retrieve specific sensor data
     path('latest-sensors-data/', LatestDataForSensorsView.as_view(), name='latest-sensors-data'),
+    # path('daily-data/', AverageSensorDataAPIView.as_view(), name='daily-data'),
 
 ]

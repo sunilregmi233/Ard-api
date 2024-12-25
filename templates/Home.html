@@ -1,0 +1,50 @@
+{% extends "_base.html" %}
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+<style>
+    .row {
+        margin-left: 100px; /* Remove row margin */
+    }
+
+    .col-md-6 {
+        padding: 0; /* Remove column padding for full width */
+    }
+
+    .full-height-map, .full-height {
+        height: 100vh; /* Use full height within the viewport */
+    }
+
+    .full-height-map {
+        overflow: hidden; /* Prevent overflow */
+    }
+
+    .full-height {
+        overflow-y: auto; /* Add scrolling if needed for content overflow */
+        padding-left: 30px; /* Adjust padding for a cleaner look */
+    }
+
+    @media (max-width: 768px) {
+        .full-height-map, .full-height {
+            height: auto; /* Auto height for smaller screens */
+            border-right: none;
+            border-bottom: 1px solid #ddd; /* Add separation for stacked layout */
+        }
+    }
+</style>
+
+<div class="row">
+    <!-- Left Column (Map) -->
+    <div class="col-md-7 col-sm-12 full-height-map">
+        {% include 'Map.html' %}
+    </div>
+
+    <!-- Right Column (Sensor View) -->
+    <div class="col-md-5 col-sm-12 full-height">
+        {% include 'SensorView.html' %}
+    </div>
+</div>
+{% include 'Faq.html' %}
+{% include 'Media.html' %}
+
+{% endblock content %}

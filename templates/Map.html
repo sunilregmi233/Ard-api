@@ -1,47 +1,256 @@
-{% extends "_base.html" %}
-{% block title %}Home{% endblock title %}
 {% block content %}
 
-    <style>
-         .map-container {
-            padding: 2rem;
-            border-radius: 10px;
-        }
-        
-        #map {
-            width: 100%;
-            height: 100vh;
-            border-radius: 10px;
-        }
-    </style>
-
-
-<!-- Resource Map Section -->
-<div class="">
-    <div class="map-container">
-        <h2 class="text-center my-4">Resource Map</h2>
-        <!-- Dropdown for selecting region -->
-
-
-        <!-- Map Placeholder -->
-        <div id="map" ></div>
-    </div>
-</div>
-
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-<script>
-    // Adjust the map container to fit the screen
-    function resizeMapContainer() {
-        const windowHeight = window.innerHeight;
-        const headerHeight = document.querySelector('h2').offsetHeight;
-        const mapContainer = document.querySelector('#map');
-        mapContainer.style.height = (windowHeight - headerHeight - 50) + 'px';
+<!-- Styles -->
+<style>
+    .map-container {
+        max-height: 500px;
     }
 
-    // Initialize the map centered around Janakpur
-    var map = L.map('map').setView([26.7183, 85.9165], 13); // Centered on Janakpur
+    #map {
+        height: 100%;
+        width: 100%;
+        border-radius: 10px;
+    }
+    .leaflet-popup-content-wrapper {
+        background: white;
+        color: #333;
+        width:550px;
+    }
+
+    .popup {
+        overflow: hidden;
+        background-color: white;
+        width: 500px;
+        border-radius: 10px;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .popup-header h2 {
+        font-size: 18px;
+        margin: 0;
+    }
+
+    .heat-index {
+        font-size: 16px;
+        color: white;
+        background-color: #e74c3c;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .data-table th, .data-table td {
+        text-align: center;
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .data-table th {
+        background-color: #f4f4f4;
+    }
+
+    .chart-buttons {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .chart-buttons button {
+        background-color: #005580;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        margin: 0 5px;
+        cursor: pointer;
+    }
+
+    .chart-buttons button.active {
+        background-color: #1abc9c;
+    }
+
+    .popup-footer {
+        display: flex;
+        justify-content: center;
+    }
+    .chart-container {
+        position: relative;
+        z-index: 10;
+    }
+    .popup-footer button {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        margin: 0 5px;
+        cursor: pointer;
+    }
+
+    .popup-footer button.download {
+        background-color: #005580;
+    }
+    .legend {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .legend-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .legend-icon {
+        width: 30px;
+        height: 30px;
+        margin-right: 8px;
+        position: relative;
+    }
+
+    .legend-icon .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: -5px;
+        right: 8px;
+    }
+
+    .status-green {
+        background-color: green;
+    }
+
+    .status-yellow {
+        background-color: yellow;
+    }
+
+    .status-red {
+        background-color: red;
+    }
+    #download-map-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 999;
+        }
+</style>
+
+
+
+<!-- Map Section with SensorView -->
+<div class="container">
+    <h2 class="text-left">Dashboard</h2>
+    <div id="map" style="height: 625px;">
+        <!-- <button id="download-map-btn" >Download Map</button> -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-icon">
+                    <div style="
+                        width: 30px;
+                        height: 30px;
+                        background-color: #2f3e50;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 12px;
+                        color: white;">S</div>
+                    <div class="status-dot status-green"></div>
+                </div>
+                <span>Active Sensor (Data OK)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">
+                    <div style="
+                        width: 30px;
+                        height: 30px;
+                        background-color: #2f3e50;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 12px;
+                        color: white;">S</div>
+                    <div class="status-dot status-yellow"></div>
+                </div>
+                <span>Active Sensor (Data Error)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">
+                    <div style="
+                        width: 30px;
+                        height: 30px;
+                        background-color: #2f3e50;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 12px;
+                        color: white;">S</div>
+                    <div class="status-dot status-red"></div>
+                </div>
+                <span>Inactive Sensor (No Data)</span>
+            </div>
+        </div>
+    </div>
+    <!-- Legend -->
+    
+</div>
+
+
+<!-- External Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+<script>
+    // Adjust the map container height dynamically
+    function resizeMapContainer() {
+        const maxMapHeight = 700; // Maximum height for the map
+        const windowHeight = window.innerHeight;
+        const headerHeight = document.querySelector('h2').offsetHeight + 50; // Include padding/margin
+        const availableHeight = windowHeight - headerHeight;
+
+        const mapContainer = document.querySelector('#map');
+        mapContainer.style.height = Math.min(availableHeight, maxMapHeight) + 'px';
+    }
+
+    // Initialize the map
+    const map = L.map('map').setView([26.7183, 85.9265], 14); // Centered on Janakpur
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -49,29 +258,65 @@
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Function to fetch and display markers dynamically
+    // Dynamically create Chart.js instance
+    function createChart(canvasId, labels, data, label) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: '#005580',
+                    backgroundColor: 'rgba(0, 85, 128, 0.1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { beginAtZero: true },
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // Determine marker status color
+    function getStatusColor(sensor) {
+        if (sensor.status === "Working" ) {
+            return "green"; // Data is normal
+        } else if (sensor.status === "Error" ) {
+            return "yellow"; // Data error
+        } else {
+            return "red"; // No data or other errors
+        }
+    }
+
+    // Load sensor data and add markers
     function loadSensorData() {
         $.ajax({
-            url: '/api/latest-sensors-data/',  // Replace with your backend endpoint
+            url: '/api/latest-sensors-data/',
             method: 'GET',
             success: function(response) {
                 console.log(response);
-                // Clear existing markers
+
+                // Remove old markers
                 map.eachLayer(function(layer) {
                     if (layer instanceof L.Marker || layer instanceof L.LayerGroup) {
                         map.removeLayer(layer);
                     }
                 });
 
-                // Add new markers from response data
+                // Add new markers
                 response.forEach(function(sensor) {
                     if (sensor.coordinates && sensor.coordinates.latitude && sensor.coordinates.longitude) {
-                        // Determine the status (green or red)
-                        const statusColor = sensor.is_active ? 'red' : 'green';
+                        const statusColor = getStatusColor(sensor);
+                        console.log(statusColor)
 
-                        // Create a custom icon
-                        var customIcon = L.divIcon({
-                            className: 'custom-marker', // Add a class for custom styling
+                        const customIcon = L.divIcon({
+                            className: 'custom-marker',
                             html: `
                                 <div style="position: relative; text-align: center; color: white;">
                                     <div style="
@@ -83,8 +328,7 @@
                                         align-items: center;
                                         justify-content: center;
                                         font-weight: bold;
-                                        font-size: 12px;
-                                    ">
+                                        font-size: 12px;">
                                         ${sensor.sensor_id}
                                     </div>
                                     <div style="
@@ -94,21 +338,47 @@
                                         border-radius: 50%;
                                         position: absolute;
                                         bottom: -5px;
-                                        right: 15px;
-                                    "></div>
+                                        right: 15px;"></div>
                                 </div>`,
                             iconSize: [40, 40],
                             iconAnchor: [20, 20]
                         });
 
-                        // Add marker with the custom icon
                         L.marker([sensor.coordinates.latitude, sensor.coordinates.longitude], { icon: customIcon })
-                            .bindPopup(
-                                `<b>Sensor ID: ${sensor.sensor_id}</b><br>
-                                 Temperature: ${sensor.temperature}°C<br>
-                                 Humidity: ${sensor.humidity}%<br>
-                                 Timestamp: ${sensor.timestamp}`
-                            )
+                            .bindPopup(`
+                                <div class="popup">
+                                    <div class="popup-header">
+                                        <h2>${sensor.sensor_id}</h2>
+                                        <div class="heat-index">Heat Index: ${sensor.heat_index || 'N/A'}</div>
+                                    </div>
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Temperature</th>
+                                                <th>Humidity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Average - Day: ${sensor.temperature_day || 'N/A'}°C</td>
+                                                <td>Average - Day: ${sensor.humidity_day || 'N/A'}%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Average - Night: ${sensor.temperature_night || 'N/A'}°C</td>
+                                                <td>Average - Night: ${sensor.humidity_night || 'N/A'}%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="chart-container">
+                                        <canvas id="chart-${sensor.sensor_id}" width="400" height="200"></canvas>
+                                    </div>
+                                </div>
+                            `)
+                            .on('popupopen', function() {
+                                const labels = ['6 Dec', '7 Dec', '8 Dec', '9 Dec', '10 Dec', '11 Dec', '12 Dec'];
+                                const data = [23, 24, 26, 27, 27, 28, 26]; // Replace with actual data
+                                createChart(`chart-${sensor.sensor_id}`, labels, data, 'Temperature');
+                            })
                             .addTo(map);
                     }
                 });
@@ -118,8 +388,8 @@
             }
         });
     }
-
-    // Load data on page load
+    
+    // Initialize the page
     $(document).ready(function() {
         resizeMapContainer();
         loadSensorData();
@@ -131,6 +401,5 @@
         window.addEventListener('resize', resizeMapContainer);
     });
 </script>
-
 
 {% endblock content %}

@@ -1,0 +1,87 @@
+
+{% block content %}
+
+<style>
+    
+    .faq-container {
+        max-width: 1300px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .faq-header {
+        text-align: center;
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #003366;
+    }
+
+    .faq-item {
+        margin-bottom: 20px;
+    }
+
+    .faq-item h3 {
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+        color: #005580;
+    }
+
+    .faq-item p {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    ul {
+        list-style: disc;
+        margin-left: 20px;
+    }
+</style>
+</head>
+<body>
+<div class="faq-container">
+    <div class="faq-header">FAQ</div>
+
+    <div class="faq-item">
+        <h3>1. What is the Heat Index?</h3>
+        <p>
+            The Heat Index, also known as the "apparent temperature," is a measure of how hot it feels when relative 
+            humidity is combined with the actual air temperature. It indicates the perceived temperature by humans, 
+            which can be higher than the actual air temperature on humid days.
+        </p>
+    </div>
+
+    <div class="faq-item">
+        <h3>2. Why is the Heat Index important?</h3>
+        <p>
+            The Heat Index helps people understand the risk of heat-related illnesses, such as heat exhaustion and 
+            heatstroke, during high-temperature and high-humidity conditions. It's a valuable tool for staying safe 
+            during hot weather.
+        </p>
+    </div>
+
+    <div class="faq-item">
+        <h3>3. How is the Heat Index calculated?</h3>
+        <p>
+            The Heat Index is calculated using a mathematical formula that considers the air temperature and relative 
+            humidity. While the exact formula is complex, it essentially reflects how moisture in the air affects 
+            the body's ability to cool itself through sweating.
+        </p>
+    </div>
+
+    <div class="faq-item">
+        <h3>4. What are the Heat Index categories?</h3>
+        <p>
+            The Heat Index is categorized as follows:
+        </p>
+        <ul>
+            <li><b>Caution:</b> Fatigue possible with prolonged exposure and physical activity.</li>
+            <li><b>Extreme Caution:</b> Heat exhaustion or heat cramps possible with prolonged exposure.</li>
+            <li><b>Danger:</b> Heat cramps or heat exhaustion likely; heatstroke possible with continued activity.</li>
+            <li><b>Extreme Danger:</b> Heatstroke is imminent.</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock content %}

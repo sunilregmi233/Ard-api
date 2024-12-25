@@ -1,41 +1,49 @@
-{% extends "_base.html" %}
-{% block title %}Sensor Data {% endblock title %}
 {% block content %}
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .pagination {
-            margin: 20px 0;
-        }
-        .pagination span, .pagination a {
-            margin: 0 5px;
-            text-decoration: none;
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            color: black;
-        }
-        .pagination .current {
-            background-color: #f2f2f2;
-            color: #000;
-        }
-    </style>
+<style>
+    table {
+        width: 90%; /* Adjust the width to be smaller */
+        margin: 0 auto; /* Center the table horizontally */
+        border-collapse: collapse;
+        background-color: white;
+    }
+    th, td {
+        border: 1px solid black;
+        padding: 6px; /* Reduced padding to make the table more compact */
+        text-align: left;
+        font-size: 0.9rem; /* Slightly smaller font size */
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    .pagination {
+        margin: 15px 0; /* Reduced margin for pagination */
+        text-align: center;
+
+    }
+    .pagination span, .pagination a {
+        background-color: #f2f2f2;
+
+        margin: 0 4px; /* Reduced margin between pagination items */
+        text-decoration: none;
+        padding: 6px 12px; /* Smaller padding for pagination buttons */
+        border: 1px solid #ddd;
+        color: black;
+        font-size: 0.85rem; /* Slightly smaller font size */
+    }
+    .pagination .current {
+        background-color: #f2f2f2;
+        color: #000;
+    }
+</style>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <div class="contain p-20" style="padding-top: 20px;">
-        <h1>Sensor Data</h1>
+<div class="container" style="overflow: hidden;">
+    <div class="contain " style="padding-top: 20px;">
+        <h1 class="text-center">Heat Index Table</h1>
 
     <!-- Sensor selection form -->
-    <form id="sensor-form">
+    <!-- <form id="sensor-form">
         <label for="sensor">Select Sensor:</label>
         <select name="sensor" id="sensor">
             <option value="">All Sensors</option>
@@ -43,18 +51,18 @@
                 <option value="{{ sensor.id }}">{{ sensor.sensor_id }}</option>
             {% endfor %}
         </select>
-    </form>
+    </form> -->
 
     <!-- Data Table -->
     <div id="data-table">
         <table>
             <thead>
                 <tr>
-                    <th>Sensor Name</th>
                     <th>Sensor ID</th>
+                    <th>Date, Time</th>
                     <th>Temperature (°C)</th>
                     <th>Humidity (%)</th>
-                    <th>Timestamp</th>
+                    <th>Heat Index</th>
                 </tr>
             </thead>
             <tbody id="table-body">
@@ -68,6 +76,7 @@
         <!-- Pagination links will be dynamically inserted here -->
     </div>
     </div>
+</div>
 
     <script>
         $(document).ready(function() {
@@ -93,6 +102,22 @@
                 });
             }
 
+            function calculateHeatIndex(temperature, humidity) {
+                // Heat Index formula approximation (in Celsius)
+                const T = temperature;
+                const R = humidity;
+                const HI = -8.78469475556 + 
+                    1.61139411 * T + 
+                    2.33854883889 * R + 
+                    -0.14611605 * T * R + 
+                    -0.012308094 * Math.pow(T, 2) + 
+                    -0.0164248277778 * Math.pow(R, 2) + 
+                    0.002211732 * Math.pow(T, 2) * R + 
+                    0.00072546 * T * Math.pow(R, 2) + 
+                    -0.000003582 * Math.pow(T, 2) * Math.pow(R, 2);
+                return HI.toFixed(2); // Round to 2 decimal places
+            }
+
             function updateTable(data) {
                 $('#table-body').empty();
                 if (data.length > 0) {
@@ -102,20 +127,25 @@
                             timeZone: 'Asia/Kathmandu',
                             hour12: false, // Set to true if you prefer 12-hour format
                         });
+
+                        // Calculate heat index
+                        const heatIndex = calculateHeatIndex(item.temperature, item.humidity);
+
                         $('#table-body').append(`
                             <tr>
-                                <td>${item.sensor_name}</td>
                                 <td>${item.sensor_id}</td>
+                                <td>${timestampNepal}</td>
                                 <td>${item.temperature}</td>
                                 <td>${item.humidity}</td>
-                                <td>${timestampNepal}</td>
+                                <td>${heatIndex}</td>
+                                
                             </tr>
                         `);
                     });
                 } else {
                     $('#table-body').append(`
                         <tr>
-                            <td colspan="5">No data available for the selected sensor.</td>
+                            <td colspan="6">No data available for the selected sensor.</td>
                         </tr>
                     `);
                 }
