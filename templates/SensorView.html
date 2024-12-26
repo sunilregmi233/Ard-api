@@ -135,6 +135,7 @@ $(document).ready(function() {
                     hour12: true,
                 });
                 const heatIndex = calculateHeatIndex(item.temperature, item.humidity);
+                // console.log(heatIndex)
 
                 let rowColor = '';
                 if (heatIndex > 54) {
@@ -144,7 +145,7 @@ $(document).ready(function() {
                 } else if (heatIndex >= 32) {
                     rowColor = 'yellow';
                 } else if (heatIndex >= 27) {
-                    rowColor = '#FFFF99';
+                    rowColor = '#73c5c5';
                 } else {
                     rowColor = 'white';
                 }

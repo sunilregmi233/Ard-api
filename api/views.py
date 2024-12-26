@@ -117,7 +117,7 @@ class LatestDataForSensorsView(APIView):
         valid_temp_range = (0, 50)
         valid_humidity_range = (0, 100)
         status_threshold = timedelta(minutes=5)
-        recent_threshold = timedelta(minutes=2)
+        recent_threshold = timedelta(minutes=3)
 
         # Calculate the start date for the last 7 days
         start_date = current_time - timedelta(days=7)
@@ -194,9 +194,11 @@ class LatestDataForSensorsView(APIView):
                     avg_temperature=Avg("temperature"),
                     avg_humidity=Avg("humidity")
                 )
-
-                heat_index = calculate_heat_index(latest_data.temperature, latest_data.humidity)
-                print(f" the heat index is {heat_index}")
+                if latest_data and time_diff <= recent_threshold: 
+                    heat_index = calculate_heat_index(latest_data.temperature, latest_data.humidity) 
+                else:
+                    heat_index = None
+                        
 
                 latest_data_dict = {
                     "sensor_id": sensor_id,
