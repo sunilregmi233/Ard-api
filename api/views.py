@@ -65,30 +65,19 @@ class RecordSensorData(APIView):
 
 def calculate_heat_index(temperature, humidity):
     """
-    Calculate the Heat Index using the formula from the National Weather Service.
-    Heat Index is only valid if temperature >= 26.7°C (80°F) and humidity >= 40%.
+    Calculate the Heat Index using the provided formula.
     """
-    if temperature is None or humidity is None or temperature < 26.7 or humidity < 40:
-        return None
-
-    # Constants for the Heat Index formula
-    c1 = -42.379
-    c2 = 2.04901523
-    c3 = 10.14333127
-    c4 = -0.22475541
-    c5 = -6.83783e-3
-    c6 = -5.481717e-2
-    c7 = 1.22874e-3
-    c8 = 8.5282e-4
-    c9 = -1.99e-6
-
-    # Formula for Heat Index
-    hi = (c1 + (c2 * temperature) + (c3 * humidity) +
-          (c4 * temperature * humidity) + (c5 * temperature**2) +
-          (c6 * humidity**2) + (c7 * temperature**2 * humidity) +
-          (c8 * temperature * humidity**2) +
-          (c9 * temperature**2 * humidity**2))
-
+    T = temperature
+    R = humidity
+    hi = (-8.78469475556 +
+          1.61139411 * T +
+          2.33854883889 * R +
+          -0.14611605 * T * R +
+          -0.012308094 * (T ** 2) +
+          -0.0164248277778 * (R ** 2) +
+          0.002211732 * (T ** 2) * R +
+          0.00072546 * T * (R ** 2) +
+          -0.000003582 * (T ** 2) * (R ** 2))
     return round(hi, 2)
 
 class LatestDataForSensorsView(APIView):
@@ -207,7 +196,7 @@ class LatestDataForSensorsView(APIView):
                 )
 
                 heat_index = calculate_heat_index(latest_data.temperature, latest_data.humidity)
-                print(heat_index)
+                print(f" the heat index is {heat_index}")
 
                 latest_data_dict = {
                     "sensor_id": sensor_id,
@@ -239,6 +228,5 @@ class LatestDataForSensorsView(APIView):
                     "seven_day_averages": seven_day_averages.get(sensor_id, []),  # Add 7-day averages
                 }
             latest_data_records.append(latest_data_dict)
-            print(latest_data_dict)
 
         return Response(latest_data_records, status=status.HTTP_200_OK)

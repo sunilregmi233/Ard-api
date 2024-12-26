@@ -80,113 +80,113 @@
 </div>
 
     <script>
-        $(document).ready(function() {
-            loadData();
+$(document).ready(function() {
+    loadData();
 
-            $('#sensor').change(function() {
-                loadData();
-            });
+    $('#sensor').change(function() {
+        loadData(); // Reload data when the sensor selection changes
+    });
 
-            function loadData(page = 1) {
-                var sensorId = $('#sensor').val();
-                $.ajax({
-                    url: '{% url "sensor-data-list" %}',
-                    method: 'GET',
-                    data: {
-                        sensor: sensorId,
-                        page: page
-                    },
-                    success: function(response) {
-                        updateTable(response.data);
-                        updatePagination(response.pagination);
-                    }
-                });
-            }
+    // Automatically refresh data every 60 seconds (60000 milliseconds)
+    setInterval(function() {
+        loadData();
+    }, 1000);
 
-            function calculateHeatIndex(temperature, humidity) {
-                // Heat Index formula approximation (in Celsius)
-                const T = temperature;
-                const R = humidity;
-                const HI = -8.78469475556 + 
-                    1.61139411 * T + 
-                    2.33854883889 * R + 
-                    -0.14611605 * T * R + 
-                    -0.012308094 * Math.pow(T, 2) + 
-                    -0.0164248277778 * Math.pow(R, 2) + 
-                    0.002211732 * Math.pow(T, 2) * R + 
-                    0.00072546 * T * Math.pow(R, 2) + 
-                    -0.000003582 * Math.pow(T, 2) * Math.pow(R, 2);
-                return HI.toFixed(2); // Round to 2 decimal places
-            }
-
-            function updateTable(data) {
-                $('#table-body').empty();
-                if (data.length > 0) {
-                    data.forEach(function (item) {
-                        if (item.temperature < 7 || item.temperature > 60 || item.humidity < 0 || item.humidity > 99) {
-                            return; // Skip this row
-                        }
-                        // Convert UTC timestamp to Nepal time
-                        const timestampNepal = new Date(item.timestamp).toLocaleString('en-US', {
-                            timeZone: 'Asia/Kathmandu',
-                            hour12: true, // 12-hour format
-                        });
-
-                        // Calculate heat index
-                        const heatIndex = calculateHeatIndex(item.temperature, item.humidity);
-
-                        // Determine row color based on heat index
-                        let rowColor = '';
-                        if (heatIndex > 54) {
-                            rowColor = 'red'; // Extreme danger
-                        } else if (heatIndex >= 41) {
-                            rowColor = 'orange'; // Danger
-                        } else if (heatIndex >= 32) {
-                            rowColor = 'yellow'; // Extreme caution
-                        } else if (heatIndex >= 27) {
-                            rowColor = '#FFFF99'; // Caution (light yellow)
-                        } else {
-                            rowColor = 'white'; // Safe zone
-                        }
-
-                        // Append the row with appropriate color
-                        $('#table-body').append(`
-                            <tr style="background-color: ${rowColor};">
-                                <td>${item.sensor_id}</td>
-                                <td>${timestampNepal}</td>
-                                <td>${item.temperature}</td>
-                                <td>${item.humidity}</td>
-                                <td>${heatIndex}</td>
-                            </tr>
-                        `);
-                    });
-                } else {
-                    $('#table-body').append(`
-                        <tr>
-                            <td colspan="6">No data available for the selected sensor.</td>
-                        </tr>
-                    `);
-                }
-            }
-
-            function updatePagination(pagination) {
-                $('#pagination').empty();
-                if (pagination.has_previous) {
-                    $('#pagination').append(`<a href="#" data-page="1">First</a>`);
-                    $('#pagination').append(`<a href="#" data-page="${pagination.previous_page_number}">Previous</a>`);
-                }
-                $('#pagination').append(`<span class="current">Page ${pagination.number} of ${pagination.num_pages}</span>`);
-                if (pagination.has_next) {
-                    $('#pagination').append(`<a href="#" data-page="${pagination.next_page_number}">Next</a>`);
-                    $('#pagination').append(`<a href="#" data-page="${pagination.num_pages}">Last</a>`);
-                }
-                $('#pagination a').click(function(e) {
-                    e.preventDefault();
-                    var page = $(this).data('page');
-                    loadData(page);
-                });
+    function loadData(page = 1) {
+        var sensorId = $('#sensor').val();
+        $.ajax({
+            url: '{% url "sensor-data-list" %}',
+            method: 'GET',
+            data: {
+                sensor: sensorId,
+                page: page
+            },
+            success: function(response) {
+                updateTable(response.data);
+                updatePagination(response.pagination);
             }
         });
+    }
+
+    function calculateHeatIndex(temperature, humidity) {
+        const T = temperature;
+        const R = humidity;
+        const HI = -8.78469475556 + 
+            1.61139411 * T + 
+            2.33854883889 * R + 
+            -0.14611605 * T * R + 
+            -0.012308094 * Math.pow(T, 2) + 
+            -0.0164248277778 * Math.pow(R, 2) + 
+            0.002211732 * Math.pow(T, 2) * R + 
+            0.00072546 * T * Math.pow(R, 2) + 
+            -0.000003582 * Math.pow(T, 2) * Math.pow(R, 2);
+        return HI.toFixed(2);
+    }
+
+    function updateTable(data) {
+        $('#table-body').empty();
+        if (data.length > 0) {
+            data.forEach(function (item) {
+                if (item.temperature < 7 || item.temperature > 60 || item.humidity < 0 || item.humidity > 99) {
+                    return;
+                }
+                const timestampNepal = new Date(item.timestamp).toLocaleString('en-US', {
+                    timeZone: 'Asia/Kathmandu',
+                    hour12: true,
+                });
+                const heatIndex = calculateHeatIndex(item.temperature, item.humidity);
+
+                let rowColor = '';
+                if (heatIndex > 54) {
+                    rowColor = 'red';
+                } else if (heatIndex >= 41) {
+                    rowColor = 'orange';
+                } else if (heatIndex >= 32) {
+                    rowColor = 'yellow';
+                } else if (heatIndex >= 27) {
+                    rowColor = '#FFFF99';
+                } else {
+                    rowColor = 'white';
+                }
+
+                $('#table-body').append(`
+                    <tr style="background-color: ${rowColor};">
+                        <td>${item.sensor_id}</td>
+                        <td>${timestampNepal}</td>
+                        <td>${item.temperature}</td>
+                        <td>${item.humidity}</td>
+                        <td>${heatIndex}</td>
+                    </tr>
+                `);
+            });
+        } else {
+            $('#table-body').append(`
+                <tr>
+                    <td colspan="6">No data available for the selected sensor.</td>
+                </tr>
+            `);
+        }
+    }
+
+    function updatePagination(pagination) {
+        $('#pagination').empty();
+        if (pagination.has_previous) {
+            $('#pagination').append(`<a href="#" data-page="1">First</a>`);
+            $('#pagination').append(`<a href="#" data-page="${pagination.previous_page_number}">Previous</a>`);
+        }
+        $('#pagination').append(`<span class="current">Page ${pagination.number} of ${pagination.num_pages}</span>`);
+        if (pagination.has_next) {
+            $('#pagination').append(`<a href="#" data-page="${pagination.next_page_number}">Next</a>`);
+            $('#pagination').append(`<a href="#" data-page="${pagination.num_pages}">Last</a>`);
+        }
+        $('#pagination a').click(function(e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            loadData(page);
+        });
+    }
+});
+
     </script>
 
 
