@@ -1,59 +1,172 @@
 {% block content %}
-    <style>
-        .page-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh; /* Full viewport height */
-            padding-left: 120px; /* Padding for smaller screens */
-        }
-        .header {
-            text-align: center;
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 30px;
-            color: #003366;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1200px; /* Control grid width */
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+<style>
+    .page-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh; /* Full viewport height */
+        padding-left: 120px; /* Padding for smaller screens */
+    }
+
+    .header {
+        text-align: center;
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 30px;
+        color: #003366;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* Fixed 4 columns */
+        gap: 20px;
+        max-width: 1200px; /* Control grid width */
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 2px solid #dfe6e9;
+    }
+
+    .card img {
+        width: 100%;
+        height: auto;
+        display: block;
+        cursor: pointer; /* Indicates clickable images */
+    }
+
+    .card h3 {
+        font-size: 1.1rem;
+        margin: 0 0 10px;
+        color: #005580;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Fullscreen overlay styles */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .overlay img {
+        max-width: 90%;
+        max-height: 90%;
+        box-shadow: 0 4px 16px rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+    }
+
+    .overlay:target {
+        display: flex;
+    }
+
+    /* Close button styles */
+    .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: #fff;
+        font-size: 2rem;
+        cursor: pointer;
+        text-decoration: none;
+        z-index: 1100;
+    }
+    .viewer-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 2000; /* Increased z-index to ensure it's above other content */
+        align-items: center;
+        justify-content: center;
+    }
+
+    .viewer-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 90%;
+        height: 90%;
+        max-width: 100%;
+        max-height: 100%;
+        margin: auto; /* Ensures proper centering */
+        z-index: 2100; /* Higher z-index to ensure it's above the overlay */
+    }
+
+    .viewer-controls {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        transform: translateY(-50%);
+        z-index: 2200; /* Ensures controls are above the image */
+    }
+
+        .viewer-container img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            z-index: 2100;
         }
 
-        .card {
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: 2px solid #dfe6e9;
-        }
+       
 
-        .card iframe {
-            width: 100%;
-            height: 180px;
+        .viewer-controls .control-btn {
+            background: rgba(255, 255, 255, 0.8);
             border: none;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 10px;
+            outline: none;
         }
 
-        .card-content {
-            padding: 15px;
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #fff;
+            font-size: 2rem;
+            cursor: pointer;
         }
 
-        .card-content h5 {
-            font-size: 1.1rem;
-            margin: 0 0 10px;
-            color: #005580;
-            text-align: center;
+    /* Responsive design */
+    @media (max-width: 1024px) {
+        .grid {
+            grid-template-columns: repeat(2, 1fr); /* Two columns for medium screens */
         }
+    }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    @media (max-width: 768px) {
+        .grid {
+            grid-template-columns: repeat(1, 1fr); /* One column for smaller screens */
         }
-    </style>
+    }
+</style>
 
     <div class="page-container">
         <div class="">
@@ -98,4 +211,80 @@
             </div>
         </div>
     </div>
+       <!-- Fullscreen Image Overlay -->
+<!-- Viewer Overlay -->
+<div class="viewer-overlay" id="image-viewer">
+    <div class="close-btn" id="close-viewer">&times;</div>
+    <div class="viewer-container">
+        <img src="" id="viewer-image" alt="Image Viewer">
+        <div class="viewer-controls">
+            <button class="control-btn" id="prev-btn">&laquo;</button>
+            <button class="control-btn" id="next-btn">&raquo;</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const images = $(".card img");
+        let currentIndex = 0;
+
+        function showViewer(index) {
+            const src = $(images[index]).attr("src");
+            $("#viewer-image").attr("src", src);
+            $("#image-viewer").fadeIn();
+            currentIndex = index;
+        }
+
+        function closeViewer() {
+            $("#image-viewer").fadeOut();
+        }
+
+        function navigateViewer(direction) {
+            currentIndex += direction;
+            if (currentIndex < 0) {
+                currentIndex = images.length - 1; // Loop to the last image
+            } else if (currentIndex >= images.length) {
+                currentIndex = 0; // Loop to the first image
+            }
+            showViewer(currentIndex);
+        }
+
+        // Image click event
+        images.on("click", function () {
+            const index = images.index(this);
+            showViewer(index);
+        });
+
+        // Close button
+        $("#close-viewer").on("click", function () {
+            closeViewer();
+        });
+
+        // Previous button
+        $("#prev-btn").on("click", function () {
+            navigateViewer(-1);
+        });
+
+        // Next button
+        $("#next-btn").on("click", function () {
+            navigateViewer(1);
+        });
+
+        // Close viewer on overlay click
+        $("#image-viewer").on("click", function (e) {
+            if (e.target === this) {
+                closeViewer();
+            }
+        });
+
+        // Close viewer on ESC key press
+        $(document).on("keyup", function (e) {
+            if (e.key === "Escape") {
+                closeViewer();
+            }
+        });
+    });
+</script>
 {% endblock content %}
