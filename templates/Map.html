@@ -5,6 +5,38 @@
     .map-container {
         max-height: 500px;
     }
+    .chart-buttons input[type="radio"] {
+        display: none; /* Hide the radio button */
+    }
+
+    .chart-buttons label {
+        position: relative;
+        margin: 10px;
+        padding: 10px 50px; /* Add padding to make it button-like */
+        background-color: #3498db; /* Default button background */
+        color: white; /* Text color */
+        border-radius: 25px; /* Rounded corners */
+        font-size: 14px;
+        text-align: center;
+        cursor: pointer; /* Change cursor to indicate it's clickable */
+        transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+    }
+
+    /* On hover: Change the background color and apply scaling */
+    .chart-buttons label:hover {
+        background-color: #1abc9c; /* Change background on hover */
+        transform: scale(1.05); /* Slight scaling effect */
+    }
+
+    /* When the radio button is checked, update the label's style */
+    .chart-buttons input[type="radio"]:checked + label {
+        background-color: #1abc9c; /* Active background color */
+    }
+
+    /* Optional: Active radio button label transition */
+    .chart-buttons input[type="radio"]:checked + label:hover {
+        background-color: #16a085; /* Darker shade when hovered on checked button */
+    }
 
     #map {
         height: 100%;
@@ -163,10 +195,24 @@
             font-size: 16px;
             cursor: pointer;
             z-index: 999;
+    }
+    @keyframes glow {
+        0% {
+            box-shadow: 0 0 5px #ff0000;
         }
+        50% {
+            box-shadow: 0 0 20px #ff0000;
+        }
+        100% {
+            box-shadow: 0 0 5px #ff0000;
+        }
+    }
+
+    .glowing-marker {
+        animation: glow 1.5s infinite;
+    }
+
 </style>
-
-
 
 <!-- Map Section with SensorView -->
 <div class="container">
@@ -238,6 +284,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
 <script>
+        // Function to download chart as an image
+    
     // Adjust the map container height dynamically
     function resizeMapContainer() {
         const maxMapHeight = 700; // Maximum height for the map
@@ -273,8 +321,7 @@
         return HI.toFixed(2); // Round to 2 decimal places
     }
     // Dynamically create Chart.js instance
-    function createChart(canvasId, labels, data, label) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
+    function createChart(ctx, labels, data, label) {
         return new Chart(ctx, {
             type: 'line',
             data: {
@@ -297,6 +344,31 @@
         });
     }
 
+    function handleChartToggle(sensor, chartInstance) {
+        const chartButtons = document.querySelectorAll(`input[name="chart-type-${sensor.sensor_id}"]`);
+        chartButtons.forEach(button => {
+            button.addEventListener('change', () => {
+                const selectedType = document.querySelector(`input[name="chart-type-${sensor.sensor_id}"]:checked`).value;
+                const labels = sensor.seven_day_averages.map(x => x.date);
+                let data, label;
+
+                if (selectedType === 'temperature') {
+                    data = sensor.seven_day_averages.map(x => x.average_temperature);
+                    label = 'Temperature';
+                } else {
+                    data = sensor.seven_day_averages.map(x => x.average_humidity);
+                    label = 'Humidity';
+                }
+
+                // Update chart with new data
+                chartInstance.data.labels = labels;
+                chartInstance.data.datasets[0].data = data;
+                chartInstance.data.datasets[0].label = label;
+                chartInstance.update();
+            });
+        });
+    }
+
     // Determine marker status color
     function getStatusColor(sensor) {
         if (sensor.status === "Working" ) {
@@ -307,7 +379,10 @@
             return "red"; // No data or other errors
         }
     }
-
+    function playBeep() {
+        const beep = new Audio('static/media/beep-beep-43875.mp3'); // Replace with your desired beep sound
+        beep.play();
+    }
     // Load sensor data and add markers
     function loadSensorData() {
         $.ajax({
@@ -328,35 +403,41 @@
                     if (sensor.coordinates && sensor.coordinates.latitude && sensor.coordinates.longitude) {
                         const statusColor = getStatusColor(sensor);
                         const hi = calculateHeatIndex(sensor.temperature, sensor.humidity)
-                        const customIcon = L.divIcon({
-                            className: 'custom-marker',
-                            html: `
-                                <div style="position: relative; text-align: center; color: white;">
-                                    <div style="
-                                        width: 40px;
-                                        height: 40px;
-                                        background-color: #2f3e50;
-                                        border-radius: 50%;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        font-weight: bold;
-                                        font-size: 12px;">
-                                        ${sensor.sensor_id}
-                                    </div>
-                                    <div style="
-                                        width: 10px;
-                                        height: 10px;
-                                        background-color: ${statusColor};
-                                        border-radius: 50%;
-                                        position: absolute;
-                                        bottom: -5px;
-                                        right: 15px;"></div>
-                                </div>`,
-                            iconSize: [40, 40],
-                            iconAnchor: [20, 20]
-                        });
+                        let customIconHtml = `
+                            <div style="position: relative; text-align: center; color: white;">
+                                <div style="
+                                    width: 40px;
+                                    height: 40px;
+                                    background-color: #2f3e50;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-weight: bold;
+                                    font-size: 12px;
+                                    ${hi > 54 ? 'animation: glow 1.5s infinite;' : ''}">
+                                    ${sensor.sensor_id}
+                                </div>
+                                <div style="
+                                    width: 10px;
+                                    height: 10px;
+                                    background-color: ${statusColor};
+                                    border-radius: 50%;
+                                    position: absolute;
+                                    bottom: -5px;
+                                    right: 15px;"></div>
+                            </div>`;
+                            const customIcon = L.divIcon({
+                                className: `custom-marker ${hi > 54 ? 'glowing-marker' : ''}`,
+                                html: customIconHtml,
+                                iconSize: [40, 40],
+                                iconAnchor: [20, 20]
+                            });
                         const marker = L.marker([sensor.coordinates.latitude, sensor.coordinates.longitude], { icon: customIcon });
+                        if (hi > 54) {
+                            // Play beep sound if heat index exceeds 54
+                            playBeep();
+                        }
                         if (sensor.status === "Inactive" || sensor.status === "No Data") {
                         // If status is "red", show a different popup
                         marker.bindPopup(`
@@ -397,16 +478,76 @@
                                     </tbody>
                                 </table>
                                 <h6>Data of last 7-day</h6>
+                                <div class="chart-buttons">
+                                    <label>
+                                        <input type="radio" name="chart-type-${sensor.sensor_id}" value="temperature" checked>
+                                        Temperature
+                                    </label>
+                                    
+                                    <label>
+                                        <input type="radio" name="chart-type-${sensor.sensor_id}" value="humidity">
+                                        Humidity
+                                    </label>
+                                </div>
                                 <div class="chart-container">
                                     <canvas id="chart-${sensor.sensor_id}" width="400" height="200"></canvas>
+                                </div>
+                                <br>
+                                <div class="popup-footer">
+                                    <button class="btn cancel">Cancel</button>
+                                    <button class="btn download">Download Data</button>
                                 </div>
                             </div>
                         `)
                         .on('popupopen', function() {
-                            console.log(sensor.seven_day_averages);
                             const labels = sensor.seven_day_averages.map(x => x.date);
-                            const data = sensor.seven_day_averages.map(x => x.average_temperature);
-                            createChart(`chart-${sensor.sensor_id}`, labels, data, 'Temperature');
+                            const tempData = sensor.seven_day_averages.map(x => x.average_temperature);
+                            const humidityData = sensor.seven_day_averages.map(x => x.average_humidity);
+                            const chartCtx = document.getElementById(`chart-${sensor.sensor_id}`).getContext('2d');
+                            
+                            // Create the initial chart for temperature
+                            const chartInstance = createChart(chartCtx, labels, tempData, 'Temperature');
+                            // Function to download chart as an image
+                            function downloadChart(chartId) {
+                                const canvas = document.getElementById(chartId);
+                                if (canvas) {
+                                    const imageUrl = canvas.toDataURL('image/png'); // Convert to PNG
+                                    const link = document.createElement('a');
+                                    link.href = imageUrl;
+                                    link.download = chartId + '-chart.png';
+                                    link.click();
+                                } else {
+                                    console.log('Canvas not found');
+                                }
+                            }
+
+                            // Updated event listener for the "Download Data" button
+                            $('.popup-footer .download').on('click', function() {
+                                const sensorId = sensor.sensor_id;
+                                
+                                // Construct the chart ID (it should be in the format 'chart-SENSOR_ID')
+                                const chartId = 'chart-' + sensorId;
+                                console.log('Chart ID:', chartId);
+                                
+                                // Ensure the canvas with the given chartId exists in the DOM
+                                const canvas = document.getElementById(chartId);
+                                if (!canvas) {
+                                    console.log('Canvas not found for chart ID:', chartId);
+                                    return;
+                                }
+                                
+                                // Call the downloadChart function with the chart ID
+                                downloadChart(chartId);
+                            });
+                            // Set up toggle functionality
+                            handleChartToggle(sensor, chartInstance);
+                            // Add event listener for the "Cancel" button
+                            const cancelButton = document.querySelector('.popup .btn.cancel');
+                            if (cancelButton) {
+                                cancelButton.addEventListener('click', function() {
+                                    marker.closePopup();  // Close the popup when "Cancel" is clicked
+                                });
+                            }
                         });
                     }
 

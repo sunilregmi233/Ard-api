@@ -123,7 +123,7 @@
                 $('#table-body').empty();
                 if (data.length > 0) {
                     data.forEach(function (item) {
-                        if (item.temperature < 0 || item.temperature > 60 || item.humidity < 0 || item.humidity > 99) {
+                        if (item.temperature < 7 || item.temperature > 60 || item.humidity < 0 || item.humidity > 99) {
                             return; // Skip this row
                         }
                         // Convert UTC timestamp to Nepal time
