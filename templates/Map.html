@@ -434,7 +434,7 @@
                                 iconAnchor: [20, 20]
                             });
                         const marker = L.marker([sensor.coordinates.latitude, sensor.coordinates.longitude], { icon: customIcon });
-                        if (hi > 54) {
+                        if (hi > 31) {
                             // Play beep sound if heat index exceeds 54
                             playBeep();
                         }
@@ -456,7 +456,9 @@
                             <div class="popup">
                                 <div class="popup-header">
                                     <h2>${sensor.sensor_id}</h2>
-                                    <div class="heat-index">Heat Index: ${hi || 'N/A'}</div>
+                                    <div class="heat-index">
+                                        Heat Index: ${hi > 70 ? 'Error: Heat index exceeds safe limit!' : (hi || 'N/A')}
+                                    </div>
                                 </div>
                                 <h6>Average Temperature and Humidity of last 24hr</h6>
                                 <table class="data-table">
