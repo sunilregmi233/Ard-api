@@ -285,7 +285,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
 <script>
         // Function to download chart as an image
-    
+    function playBeep() {
+        const beep = new Audio('static/media/beep-beep-43875.mp3'); // Replace with your desired beep sound
+        beep.play();
+    }
     // Adjust the map container height dynamically
     function resizeMapContainer() {
         const maxMapHeight = 700; // Maximum height for the map
@@ -379,10 +382,7 @@
             return "red"; // No data or other errors
         }
     }
-    function playBeep() {
-        const beep = new Audio('static/media/beep-beep-43875.mp3'); // Replace with your desired beep sound
-        beep.play();
-    }
+    
     // Load sensor data and add markers
     function loadSensorData() {
         $.ajax({
@@ -402,7 +402,9 @@
                 response.forEach(function(sensor) {
                     if (sensor.coordinates && sensor.coordinates.latitude && sensor.coordinates.longitude) {
                         const statusColor = getStatusColor(sensor);
-                        const hi = calculateHeatIndex(sensor.temperature, sensor.humidity)
+                        let hi = sensor.heat_index
+                        console.log(hi);
+                        
                         let customIconHtml = `
                             <div style="position: relative; text-align: center; color: white;">
                                 <div style="
@@ -435,7 +437,6 @@
                             });
                         const marker = L.marker([sensor.coordinates.latitude, sensor.coordinates.longitude], { icon: customIcon });
                         if (hi > 31) {
-                            // Play beep sound if heat index exceeds 54
                             playBeep();
                         }
                         if (sensor.status === "Inactive" || sensor.status === "No Data") {
